@@ -8,7 +8,7 @@ import os
 
 import psycopg2
 from psycopg2 import sql
-from psycopg2._psycopg import OperationalError
+from psycopg2._psycopg import OperationalError as db_not_found
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 DATABASE = os.getenv('DATABASE', 'covid19_casos_brasil')
@@ -31,7 +31,7 @@ def connect_db():
             host='',
             password=PASSWORD)
         cur = con.cursor()
-    except OperationalError:
+    except db_not_found:
         con = psycopg2.connect(
             dbname='postgres',
             user=USER,
