@@ -25,14 +25,14 @@ TABLES = [
     {'name': 'cases',
      'sql': 'CREATE TABLE cases('
             'city_ibge_code int NOT NULL,'
-            ' date date,'
-            ' epidemioloical_wek int,'
-            ' last_available_confirmed int,'
-            ' last_available_deths int,'
-            ' last_available_death_rate numeric,'
-            ' last_available_confirmed_per_100k_inhabitants numeric,'
-            ' CONSTRAINT PK_Cases PRIMARY KEY (city_ibge_code, date),'
-            ' FOREIGN KEY (city_ibge_code) REFERENCES city(city_ibge_code))'}
+            'date date,'
+            'epidemiological_week int,'
+            'last_available_confirmed int,'
+            'last_available_deaths int,'
+            'last_available_death_rate numeric,'
+            'last_available_confirmed_per_100k_inhabitants numeric,'
+            'CONSTRAINT PK_Cases PRIMARY KEY (city_ibge_code, date),'
+            'FOREIGN KEY (city_ibge_code) REFERENCES city(city_ibge_code))'}
 ]
 
 

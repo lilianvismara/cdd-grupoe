@@ -5,6 +5,7 @@ import os
 
 import pandas as pd
 import psycopg2
+from psycopg2 import sql
 
 DATABASE = os.getenv('DATABASE', 'covid19_casos_brasil')
 USER = os.getenv('USER', 'user_name')
@@ -65,14 +66,36 @@ def create_cidade(con, cidade):
         con.commit()
 
 
-def create_caso(cur_db, caso):
+def create_caso(con, caso):
     """
     Verifica se já existe o caso no banco de dados, se não existir salva
     :param cur_db: Cursor para o banco de dados
     :param caso: Dados do caso
     :return: None
     """
-    pass
+
+    cur = con.cursor()
+    cur.execute("""SELECT 1 FROM cases WHERE city_ibge_code = '{}' AND date = '{}'"""
+                .format(int(caso['city_ibge_code']), caso['date']))
+    caso_existe = cur.fetchone()
+
+    if not caso_existe:
+        cur.execute(sql.SQL("""INSERT INTO cases(
+            city_ibge_code, 
+            date, 
+            epidemiological_week, 
+            last_available_confirmed,
+            last_available_deaths,
+            last_available_death_rate,
+            last_available_confirmed_per_100k_inhabitants) VALUES('{}','{}','{}','{}','{}','{}','{}');""".format(
+            int(caso['city_ibge_code']),
+            caso['date'],
+            int(caso['epidemiological_week']),
+            int(caso['last_available_confirmed']),
+            int(caso['last_available_deaths']),
+            float(caso['last_available_death_rate']),
+            round(float(caso['last_available_confirmed_per_100k_inhabitants']), 5))))
+        con.commit()
 
 
 if __name__ == '__main__':
@@ -83,5 +106,3 @@ if __name__ == '__main__':
 
     for caso in CASOS:
         create_caso(con, CASOS[caso])
-
-pass
