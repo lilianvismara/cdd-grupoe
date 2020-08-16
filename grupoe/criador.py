@@ -15,14 +15,14 @@ USER = os.getenv('USER', 'user_name')
 HOST = os.getenv('HOST', 'localhost')
 PASSWORD = os.getenv('PASSWORD', 'user_password')
 TABLES = [
-    {'name': 'city2',
+    {'name': 'city',
      'sql': 'CREATE TABLE city('
             'city_ibge_code int NOT NULL, '
             'city varchar(255), '
             'state varchar(2), '
             'estimated_population_2019 int, '
             'PRIMARY KEY (city_ibge_code))'},
-    {'name': 'cases2',
+    {'name': 'cases',
      'sql': 'CREATE TABLE cases('
             'city_ibge_code int NOT NULL,'
             ' date date,'
@@ -39,39 +39,42 @@ TABLES = [
 def connect_db():
     """
     Conecta no Banco de dados, se ele não existe cia
-    :return: cursor do banco de dados
+    :return: conexão do banco de dados
     """
     try:
         con = psycopg2.connect(
             dbname=DATABASE,
             user=USER,
-            host='',
+            host=HOST,
             password=PASSWORD)
-        cur = con.cursor()
     except OperationalError:
         con = psycopg2.connect(
             dbname='postgres',
             user=USER,
-            host='',
+            host=HOST,
             password=PASSWORD)
         con.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)  # <-- ADD THIS LINE
         cur = con.cursor()
         cur.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(DATABASE)))
-    return cur
+        con.commmit()
+    return con
 
 
-def check_tables(cur):
+def check_tables(con):
     """
     Verifica a existência das tabela, se não encontra cria
     :param cur: cursor do Banco
     :return: None
     """
+
+    cur = con.cursor()
     for table in TABLES:
         # Verifica se a tabela existe
-        cur.execute("select exists(select * from information_schema.tables where table_name=%s)",
-                    (table['name'],))
-        if not cur.fetchone()[0]:
-            cur.execute(table['sql'])
+        cur.execute("select 1 from information_schema.tables where table_name='{}'".format(table['name']))
+        if not cur.fetchone():
+            cur.execute(sql.SQL(table['sql']))
+    con.commit()
+    con.close()
 
 
 check_tables(connect_db())
